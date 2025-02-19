@@ -39,13 +39,13 @@ class AddRecipeActivity : AppCompatActivity() {
 
         // Añadir foto
         addPhotoButton.setOnClickListener {
-            checkPermission(Manifest.permission.CAMERA, CAMERA_PERMISSION_CODE)
+            checkPermission(android.Manifest.permission.CAMERA, CAMERA_PERMISSION_CODE)
             openCamera()
         }
 
         // Añadir audio
         addAudioButton.setOnClickListener {
-            checkPermission(Manifest.permission.RECORD_AUDIO, AUDIO_PERMISSION_CODE)
+            checkPermission(android.Manifest.permission.RECORD_AUDIO, AUDIO_PERMISSION_CODE)
             recordAudio()
         }
 

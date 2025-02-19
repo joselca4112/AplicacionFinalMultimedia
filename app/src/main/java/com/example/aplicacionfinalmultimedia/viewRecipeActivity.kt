@@ -12,32 +12,34 @@ import com.example.aplicacionfinalmultimedia.Model.Recipe
 
 class ViewRecipeActivity : AppCompatActivity() {
 
+    private lateinit var receta:Recipe
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_recipe)
 
-        val recipe = intent.getSerializableExtra("recipe") as Recipe
+        receta = intent.getSerializableExtra("recipe") as Recipe
 
         // Mostrar título
-        findViewById<TextView>(R.id.titleTextView).text = recipe.title
+        findViewById<TextView>(R.id.titleTextView).text = receta.title
 
         // Mostrar foto
-        recipe.photoPath?.let {
+        receta.photoPath?.let {
             Glide.with(this).load(it).into(findViewById(R.id.imageView))
         }
 
         // Reproducir audio
-        recipe.audioPath?.let {
+        receta.audioPath?.let {
             findViewById<Button>(R.id.playButton).setOnClickListener {
-                playAudio(it)
+                playAudio()
             }
         }
     }
 
-    private fun playAudio(path: String) {
+    private fun playAudio() {
         val mediaPlayer = MediaPlayer()
         try {
-            mediaPlayer.setDataSource(path)
+            mediaPlayer.setDataSource(receta.audioPath)
             mediaPlayer.prepare()
             mediaPlayer.start()
         } catch (e: Exception) {
