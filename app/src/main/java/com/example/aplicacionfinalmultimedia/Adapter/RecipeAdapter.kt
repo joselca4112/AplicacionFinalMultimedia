@@ -1,4 +1,4 @@
-package Adapter
+package com.example.aplicacionfinalmultimedia.Adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.aplicacionfinalmultimedia.Model.Recipe
 import com.example.aplicacionfinalmultimedia.R
 
@@ -34,7 +35,7 @@ class RecipeAdapter(private val recipes: List<Recipe>, private val onItemClick: 
 
         // Cargar imagen desde la ruta
         recipe.photoPath?.let {
-           // Glide.with(holder.imageView.context).load(it).into(holder.imageView)
+           Glide.with(holder.imageView.context).load(it).into(holder.imageView)
         }
     }
 
