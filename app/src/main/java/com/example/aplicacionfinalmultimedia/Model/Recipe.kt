@@ -1,5 +1,6 @@
 package com.example.aplicacionfinalmultimedia.Model
 
+
 data class Recipe(
     val id: Int,
     val title: String,

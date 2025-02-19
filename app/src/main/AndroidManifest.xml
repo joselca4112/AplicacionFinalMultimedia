@@ -28,7 +28,10 @@
             android:name=".AddRecipeActivity"
             android:exported="false" /> <!-- Activity principal -->
         <activity
-            android:name=".MainActivity"
+            android:name=".WalkieTalkieActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
