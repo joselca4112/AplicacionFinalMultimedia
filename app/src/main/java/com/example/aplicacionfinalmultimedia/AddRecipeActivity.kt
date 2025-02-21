@@ -8,8 +8,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -20,6 +22,8 @@ import com.example.aplicacionfinalmultimedia.MainActivity.Companion.recipeList
 import com.example.aplicacionfinalmultimedia.Model.Recipe
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 class AddRecipeActivity : AppCompatActivity() {
 
@@ -34,8 +38,6 @@ class AddRecipeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_recipe)
-
-        intent
 
         recipeTitle = findViewById(R.id.recipeTitle)
         addPhotoButton = findViewById(R.id.addPhotoButton)
@@ -55,7 +57,7 @@ class AddRecipeActivity : AppCompatActivity() {
         // Guardar receta
         saveButton.setOnClickListener {
             val title = recipeTitle.text.toString()
-            if (title.isNotEmpty()) {
+            if (title.isNotEmpty() && !photoPath.isNullOrEmpty()) {
                 try {
                     val newRecipe = Recipe(recipeList.size + 1, title, photoPath, audioPath)
                     recipeList.add(newRecipe)
@@ -63,7 +65,6 @@ class AddRecipeActivity : AppCompatActivity() {
                 }catch (e:Exception){
 
                 }
-
             }
         }
     }
@@ -95,29 +96,54 @@ class AddRecipeActivity : AppCompatActivity() {
                     photoPath = saveImage(bitmap)
                 }
                 AUDIO_REQUEST_CODE -> {
-                    // La URI del audio grabado
                     val audioUri = data?.data
-                    // Obtener la ruta real del archivo usando el ContentResolver
-                    audioPath = audioUri?.let { getRealPathFromURI(it) }
+                    audioUri?.let { uri ->
+                        // Copiar el archivo de audio a un directorio de tu aplicación
+                        val audioFile = copyAudioFileToAppDirectory(uri)
+                        audioPath = audioFile?.absolutePath
+                    }
                 }
             }
         }
     }
-    private fun getRealPathFromURI(uri: Uri): String? {
-        var cursor: Cursor? = null
+    fun copyAudioFileToAppDirectory(uri: Uri): File? {
+        var inputStream: InputStream? = null
+        var outputStream: OutputStream? = null
+        var audioFile: File? = null
+
         try {
-            val projection = arrayOf(MediaStore.Audio.Media.DATA)
-            cursor = contentResolver.query(uri, projection, null, null, null)
-            val columnIndex = cursor?.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-            cursor?.moveToFirst()
-            return cursor?.getString(columnIndex ?: -1)
+            // Obtener el nombre del archivo desde la URI
+            val fileName = "audio_${System.currentTimeMillis()}.mp3"
+            val appDirectory = File(filesDir, "audio_files") // Crea un directorio dentro de la app
+            if (!appDirectory.exists()) {
+                appDirectory.mkdir()
+            }
+
+            // Crear un archivo dentro de tu directorio de aplicación
+            audioFile = File(appDirectory, fileName)
+
+            // Abrir un InputStream desde la URI del audio
+            inputStream = contentResolver.openInputStream(uri)
+            // Crear un OutputStream para escribir el archivo
+            outputStream = FileOutputStream(audioFile)
+
+            // Copiar los datos del InputStream al OutputStream
+            inputStream?.copyTo(outputStream)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
         } finally {
-            cursor?.close()
+            inputStream?.close()
+            outputStream?.close()
         }
+
+        return audioFile
     }
+
     private fun saveImage(bitmap: Bitmap): String {
+
         val fileName = "recipe_image_${System.currentTimeMillis()}.jpg"
-        val dir = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Recipes")
+        val dir = File(filesDir, "image_files")
         dir.mkdirs()
         val file = File(dir, fileName)
         val outputStream = FileOutputStream(file)
@@ -125,6 +151,7 @@ class AddRecipeActivity : AppCompatActivity() {
         outputStream.flush()
         outputStream.close()
         return file.absolutePath
+
     }
 
     companion object {

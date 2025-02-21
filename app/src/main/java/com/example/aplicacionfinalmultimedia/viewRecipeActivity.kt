@@ -45,7 +45,7 @@ class ViewRecipeActivity : AppCompatActivity() {
             mediaPlayer.prepare()
             mediaPlayer.start()
         } catch (e: Exception) {
-            Log.e("Error",e.message.orEmpty())
+            Log.e("Error","Audio no encontrado")
         }
     }
 }
