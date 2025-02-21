@@ -63,7 +63,7 @@ class AddRecipeActivity : AppCompatActivity() {
                     recipeList.add(newRecipe)
                     finish()
                 }catch (e:Exception){
-
+                    Toast.makeText(this,"Error al añadir receta",Toast.LENGTH_SHORT)
                 }
             }
         }

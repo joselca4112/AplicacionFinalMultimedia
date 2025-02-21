@@ -24,11 +24,12 @@ import java.io.FileWriter
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        //Lista de recetas almacenadas, como companion object para poder usar este atributo en otras activities
         lateinit var recipeList: ArrayList<Recipe>
     }
+    //Adapter para el recyclerview
     private lateinit var adapter: RecipeAdapter
-
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        //Asociamos cada item de 
         adapter = RecipeAdapter(recipeList) { recipe ->
             startActivity(Intent(this, ViewRecipeActivity::class.java).apply {
                 putExtra("recipe", recipe)
@@ -72,12 +74,7 @@ class MainActivity : AppCompatActivity() {
     fun updateRecipeList() {
         adapter.notifyDataSetChanged()
     }
-
-    private fun checkPermission(permission: String, requestCode: Int)  {
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
-        }
-    }
+    
     // Método para guardar las recetas en un archivo JSON
     fun saveRecipesToFile(context: Context, recipeList: List<Recipe>) {
         if(recipeList.isNotEmpty()){
