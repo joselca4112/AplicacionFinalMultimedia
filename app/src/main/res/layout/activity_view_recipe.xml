@@ -17,9 +17,8 @@
         android:layout_height="200dp"
         android:scaleType="centerCrop" />
 
-    <Button
-        android:id="@+id/playButton"
+    <VideoView
+        android:id="@+id/audioView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Reproducir Audio" />
+        android:layout_height="wrap_content" />
 </LinearLayout>

@@ -13,7 +13,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.aplicacionfinalmultimedia.AddRecipeActivity.Companion.PERMISSION_CODE
 import com.example.aplicacionfinalmultimedia.Model.Recipe
 import com.google.gson.Gson
 import java.io.File
@@ -26,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         //Lista de recetas almacenadas, como companion object para poder usar este atributo en otras activities
         lateinit var recipeList: ArrayList<Recipe>
+        val PERMISSION_CODE=100
     }
     //Adapter para el recyclerview
     private lateinit var adapter: RecipeAdapter
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
-        //Asociamos cada item de 
+        //Asociamos cada item de
         adapter = RecipeAdapter(recipeList) { recipe ->
             startActivity(Intent(this, ViewRecipeActivity::class.java).apply {
                 putExtra("recipe", recipe)

@@ -2,22 +2,17 @@ package com.example.aplicacionfinalmultimedia
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.aplicacionfinalmultimedia.MainActivity.Companion.recipeList
 import com.example.aplicacionfinalmultimedia.Model.Recipe
 import java.io.File
@@ -35,6 +30,12 @@ class AddRecipeActivity : AppCompatActivity() {
     private var photoPath: String? = null
     private var audioPath: String? = null
 
+    private lateinit var activityAudioLauncher:
+            ActivityResultLauncher<Intent>
+
+    private lateinit var activityCameraLauncher:
+            ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_recipe)
@@ -44,14 +45,40 @@ class AddRecipeActivity : AppCompatActivity() {
         addAudioButton = findViewById(R.id.addAudioButton)
         saveButton = findViewById(R.id.saveButton)
 
+        //Inicializar audiolauncher
+        activityAudioLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    //Añadir guardar el video respuesta
+                    val audioUri = result.data?.data
+                    audioUri?.let { uri ->
+                        // Copiar el archivo de audio a un directorio de tu aplicación
+                        val audioFile = copyAudioFileToAppDirectory(uri)
+                        audioPath = audioFile?.absolutePath
+                    }
+                }
+            }
+        //Inicializar camaralauncher
+        activityCameraLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val bitmap = result.data?.extras?.get("data") as Bitmap
+                    photoPath = saveImage(bitmap)
+                }
+            }
+
         // Añadir foto
         addPhotoButton.setOnClickListener {
-            if(checkPermission(android.Manifest.permission.CAMERA, PERMISSION_CODE)) openCamera()
+            if(checkPermission(android.Manifest.permission.CAMERA)) openCamera()
         }
 
         // Añadir audio
         addAudioButton.setOnClickListener {
-            if(checkPermission(android.Manifest.permission.RECORD_AUDIO, PERMISSION_CODE)) recordAudio()
+            if(checkPermission(android.Manifest.permission.RECORD_AUDIO)) recordAudio()
         }
 
         // Guardar receta
@@ -63,13 +90,13 @@ class AddRecipeActivity : AppCompatActivity() {
                     recipeList.add(newRecipe)
                     finish()
                 }catch (e:Exception){
-                    Toast.makeText(this,"Error al añadir receta",Toast.LENGTH_SHORT)
+                    Toast.makeText(this,"Error al añadir receta",Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    private fun checkPermission(permission: String, requestCode: Int) :Boolean {
+    private fun checkPermission(permission: String) :Boolean {
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             return false
         }else{
@@ -79,34 +106,15 @@ class AddRecipeActivity : AppCompatActivity() {
 
     private fun openCamera() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, CAMERA_REQUEST_CODE)
+        activityCameraLauncher.launch(intent)
     }
 
     private fun recordAudio() {
         val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION)
-        startActivityForResult(intent, AUDIO_REQUEST_CODE)
+        activityAudioLauncher.launch(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            when (requestCode) {
-                CAMERA_REQUEST_CODE -> {
-                    val bitmap = data?.extras?.get("data") as Bitmap
-                    photoPath = saveImage(bitmap)
-                }
-                AUDIO_REQUEST_CODE -> {
-                    val audioUri = data?.data
-                    audioUri?.let { uri ->
-                        // Copiar el archivo de audio a un directorio de tu aplicación
-                        val audioFile = copyAudioFileToAppDirectory(uri)
-                        audioPath = audioFile?.absolutePath
-                    }
-                }
-            }
-        }
-    }
-    fun copyAudioFileToAppDirectory(uri: Uri): File? {
+    private fun copyAudioFileToAppDirectory(uri: Uri): File? {
         var inputStream: InputStream? = null
         var outputStream: OutputStream? = null
         var audioFile: File? = null
@@ -152,11 +160,5 @@ class AddRecipeActivity : AppCompatActivity() {
         outputStream.close()
         return file.absolutePath
 
-    }
-
-    companion object {
-        const val PERMISSION_CODE=100
-        const val CAMERA_REQUEST_CODE = 101
-        const val AUDIO_REQUEST_CODE = 103
     }
 }
