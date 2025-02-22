@@ -4,11 +4,13 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.aplicacionfinalmultimedia.Model.Recipe
 import android.widget.MediaController
+import android.widget.VideoView
 
 
 class ViewRecipeActivity : AppCompatActivity() {
@@ -34,7 +36,7 @@ class ViewRecipeActivity : AppCompatActivity() {
 
         // Reproducir audio
         receta.audioPath?.let {
-            findViewById<Button>(R.id.audioView).setOnClickListener {
+            findViewById<FrameLayout>(R.id.audioView).setOnClickListener {
                 playAudio()
             }
         }
