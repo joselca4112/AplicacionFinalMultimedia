@@ -46,11 +46,8 @@ class AddRecipeActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
 
-    private lateinit var activityAudioLauncher:
-            ActivityResultLauncher<Intent>
-
-    private lateinit var activityCameraLauncher:
-            ActivityResultLauncher<Intent>
+    private lateinit var activityAudioLauncher: ActivityResultLauncher<Intent>
+    private lateinit var activityCameraLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,52 +63,43 @@ class AddRecipeActivity : AppCompatActivity() {
 
         startCamera()
 
-        // Pedir permisos antes de iniciar la cámara
-//        if (checkPermission(Manifest.permission.CAMERA)) {
-//            startCamera()
-//        } else {
-//            requestPermissions.launch(arrayOf(Manifest.permission.CAMERA))
-//        }
-
-        //Inicializar audiolauncher
-        activityAudioLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    //Añadir guardar el video respuesta
-                    val audioUri = result.data?.data
-                    audioUri?.let { uri ->
-                        // Copiar el archivo de audio a un directorio de tu aplicación
-                        val audioFile = copyAudioFileToAppDirectory(uri)
-                        audioPath = audioFile?.absolutePath
-                    }
+        // Inicializar audiolauncher
+        activityAudioLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                // Guardar el audio
+                val audioUri = result.data?.data
+                audioUri?.let { uri ->
+                    // Copiar el archivo de audio a un directorio de la app
+                    val audioFile = copyAudioFileToAppDirectory(uri)
+                    audioPath = audioFile?.absolutePath
+                    // Avisar con un Toast
+                    Toast.makeText(applicationContext, "Audio guardado", Toast.LENGTH_SHORT).show()
                 }
             }
-        //Inicializar camaralauncher
-        activityCameraLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    val bitmap = result.data?.extras?.get("data") as Bitmap
-                    photoPath = saveImage(bitmap)
-                }
+        }
+
+        // Inicializar camaralauncher
+        activityCameraLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val bitmap = result.data?.extras?.get("data") as Bitmap
+                photoPath = saveImage(bitmap)
+                // Avisar con un Toast
+                Toast.makeText(applicationContext, "Imagen guardada", Toast.LENGTH_SHORT).show()
             }
+        }
 
-//        // Añadir foto
-//        addPhotoButton.setOnClickListener {
-//            if(checkPermission(android.Manifest.permission.CAMERA)) openCamera()
-//        }
-
+        // Añadir foto
         addPhotoButton.setOnClickListener {
             capturePhoto()
         }
 
-
         // Añadir audio
         addAudioButton.setOnClickListener {
-            if(checkPermission(android.Manifest.permission.RECORD_AUDIO)) recordAudio()
+            if (checkPermission(android.Manifest.permission.RECORD_AUDIO)) recordAudio()
         }
 
         // Guardar receta
@@ -121,10 +109,14 @@ class AddRecipeActivity : AppCompatActivity() {
                 try {
                     val newRecipe = Recipe(recipeList.size + 1, title, photoPath, audioPath)
                     recipeList.add(newRecipe)
+                    // Avisar con un Toast
+                    Toast.makeText(this, "Receta guardada con éxito", Toast.LENGTH_SHORT).show()
                     finish()
-                }catch (e:Exception){
-                    Toast.makeText(this,"Error al añadir receta",Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error al añadir receta", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -172,6 +164,7 @@ class AddRecipeActivity : AppCompatActivity() {
                     photoPath = photoFile.absolutePath
                     runOnUiThread {
                         imageView.setImageURI(Uri.fromFile(photoFile)) // Mostrar la foto tomada
+                        // Avisar con un Toast
                         Toast.makeText(applicationContext, "Imagen guardada", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -183,23 +176,9 @@ class AddRecipeActivity : AppCompatActivity() {
         )
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
+    private fun checkPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
     }
-
-    private fun checkPermission(permission: String) :Boolean {
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            return false
-        }else{
-            return true
-        }
-    }
-
-//    private fun openCamera() {
-//        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//        activityCameraLauncher.launch(intent)
-//    }
 
     private fun recordAudio() {
         val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION)
@@ -241,7 +220,6 @@ class AddRecipeActivity : AppCompatActivity() {
     }
 
     private fun saveImage(bitmap: Bitmap): String {
-
         val fileName = "recipe_image_${System.currentTimeMillis()}.jpg"
         val dir = File(filesDir, "image_files")
         dir.mkdirs()
@@ -251,6 +229,10 @@ class AddRecipeActivity : AppCompatActivity() {
         outputStream.flush()
         outputStream.close()
         return file.absolutePath
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 }

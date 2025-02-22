@@ -1,45 +1,64 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/background_gradient">
 
     <EditText
         android:id="@+id/recipeTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Título de la receta" />
+        android:hint="Título de la receta"
+        android:background="@drawable/rounded_search"
+        android:padding="12dp"
+        android:textColor="@color/black"
+        android:layout_margin="16dp"/>
 
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:elevation="8dp"
+        android:layout_margin="16dp"/>
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:scaleType="centerCrop"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:background="@drawable/card_audio"
+        android:layout_margin="16dp"/>
 
-
+    <!-- Botón Añadir Foto -->
     <Button
         android:id="@+id/addPhotoButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Añadir Foto" />
+        style="@style/ButtonStyle"
+        android:text="Añadir Foto"
+        android:backgroundTint="@color/button_color"
+        android:layout_margin="16dp"/>
 
+    <!-- Botón Añadir Audio -->
     <Button
         android:id="@+id/addAudioButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Añadir Audio" />
+        style="@style/ButtonStyle"
+        android:text="Añadir Audio"
+        android:backgroundTint="@color/button_color"
+        android:layout_margin="16dp"/>
 
+    <!-- Botón Guardar -->
     <Button
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Guardar" />
+        style="@style/ButtonStyle"
+        android:text="Guardar"
+        android:backgroundTint="@color/button_color"
+        android:layout_margin="16dp"/>
 </LinearLayout>
