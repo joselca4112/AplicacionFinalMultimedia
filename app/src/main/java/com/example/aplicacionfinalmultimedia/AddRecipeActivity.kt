@@ -43,9 +43,11 @@ class AddRecipeActivity : AppCompatActivity() {
     private var photoPath: String? = null
     private var audioPath: String? = null
 
+    //Captura de imagen
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
 
+    //Lanzadores de actividades
     private lateinit var activityAudioLauncher: ActivityResultLauncher<Intent>
     private lateinit var activityCameraLauncher: ActivityResultLauncher<Intent>
 
@@ -59,8 +61,10 @@ class AddRecipeActivity : AppCompatActivity() {
         saveButton = findViewById(R.id.saveButton)
         imageView = findViewById(R.id.imageView)
 
+        //jecutor de un solo hilo para manejar operaciones de la cámara en segundo plano.
         cameraExecutor = Executors.newSingleThreadExecutor()
 
+        // configurar y comenzar la vista previa de la cámara.
         startCamera()
 
         // Inicializar audiolauncher
@@ -120,12 +124,13 @@ class AddRecipeActivity : AppCompatActivity() {
             }
         }
     }
-
+    //Este método configura y comienza la vista previa de la cámara utilizando la biblioteca CameraX
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
+            //Configura un Preview para mostrar la vista de la cámara en un PreviewView de la interfaz de usuario
             val preview = Preview.Builder()
                 .build()
                 .also {
@@ -136,6 +141,7 @@ class AddRecipeActivity : AppCompatActivity() {
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
+            //Intenta vincular el Preview y el ImageCapture al ciclo de vida de la actividad
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
@@ -146,6 +152,7 @@ class AddRecipeActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    //ste método maneja la captura de una foto cuando el usuario presiona el botón correspondiente
     private fun capturePhoto() {
         val imageCapture = imageCapture ?: return
 
@@ -156,6 +163,7 @@ class AddRecipeActivity : AppCompatActivity() {
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
+        //Llama al método shutdown en cameraExecutor para liberar los recursos asociados con el ejecutor de la cámara
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -185,6 +193,7 @@ class AddRecipeActivity : AppCompatActivity() {
         activityAudioLauncher.launch(intent)
     }
 
+    //Este método copia un archivo de audio desde una URI proporcionada al directorio de la aplicación
     private fun copyAudioFileToAppDirectory(uri: Uri): File? {
         var inputStream: InputStream? = null
         var outputStream: OutputStream? = null
@@ -231,6 +240,7 @@ class AddRecipeActivity : AppCompatActivity() {
         return file.absolutePath
     }
 
+    //Llama al método shutdown en cameraExecutor para liberar los recursos asociados con el ejecutor de la cámara
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
