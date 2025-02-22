@@ -8,10 +8,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.aplicacionfinalmultimedia.MainActivity
 import com.example.aplicacionfinalmultimedia.Model.Recipe
 import com.example.aplicacionfinalmultimedia.R
 
-class RecipeAdapter(private var recipes: ArrayList<Recipe>, private val onItemClick: (Recipe) -> Unit) :
+class RecipeAdapter(private var recipes: ArrayList<Recipe>, private val main: MainActivity, private val onItemClick: (Recipe) -> Unit) :
     RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
 
     inner class RecipeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -41,6 +42,7 @@ class RecipeAdapter(private var recipes: ArrayList<Recipe>, private val onItemCl
         holder.btnEliminar.setOnClickListener{
             recipes.removeAt(position)
             notifyItemRemoved(position)
+            MainActivity.saveRecipesToFile(main,recipes)
         }
     }
 
@@ -50,5 +52,6 @@ class RecipeAdapter(private var recipes: ArrayList<Recipe>, private val onItemCl
     fun updateRecipes(newRecipes: ArrayList<Recipe>) {
         recipes = newRecipes
         notifyDataSetChanged()
+        MainActivity.saveRecipesToFile(main,recipes)
     }
 }
