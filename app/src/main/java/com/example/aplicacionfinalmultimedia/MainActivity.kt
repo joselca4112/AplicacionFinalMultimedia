@@ -24,6 +24,32 @@ class MainActivity : AppCompatActivity() {
         lateinit var recipeList: ArrayList<Recipe>
         // identificador para la solicitud de permisos en tiempo de ejecución
         val PERMISSION_CODE = 100
+
+        // Método para guardar las recetas en un archivo JSON
+        fun saveRecipesToFile(context: Context, recipeList: List<Recipe>) {
+            if (recipeList.isNotEmpty()) {
+                val gson = Gson()
+                val json = gson.toJson(recipeList) // Convertimos la lista a JSON
+                val file = File(context.filesDir, "recipes.json") // Ubicación dentro de la app
+                FileWriter(file).use { writer ->
+                    writer.write(json)
+                }
+            }
+        }
+
+        // Método para cargar las recetas desde el archivo JSON
+        fun loadRecipesFromFile(context: Context): ArrayList<Recipe> {
+            val gson = Gson()
+            val file = File(context.filesDir, "recipes.json")
+            if (file.exists()) {
+                FileReader(file).use { reader ->
+                    val recipesArray = gson.fromJson(reader, Array<Recipe>::class.java)
+                    return ArrayList(recipesArray?.toList() ?: emptyList())
+                }
+            } else {
+                return ArrayList() // Si no existe, devolvemos una lista vacía
+            }
+        }
     }
 
     // Adapter para el RecyclerView
@@ -48,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
-        adapter = RecipeAdapter(recipeList) { recipe ->
+        adapter = RecipeAdapter(recipeList,this) { recipe ->
             startActivity(Intent(this, ViewRecipeActivity::class.java).apply {
                 putExtra("recipe", recipe)
             })
@@ -97,29 +123,5 @@ class MainActivity : AppCompatActivity() {
         adapter.updateRecipes(filteredList) // Actualizar el adapter con la lista filtrada
     }
 
-    // Método para guardar las recetas en un archivo JSON
-    fun saveRecipesToFile(context: Context, recipeList: List<Recipe>) {
-        if (recipeList.isNotEmpty()) {
-            val gson = Gson()
-            val json = gson.toJson(recipeList) // Convertimos la lista a JSON
-            val file = File(context.filesDir, "recipes.json") // Ubicación dentro de la app
-            FileWriter(file).use { writer ->
-                writer.write(json)
-            }
-        }
-    }
 
-    // Método para cargar las recetas desde el archivo JSON
-    fun loadRecipesFromFile(context: Context): ArrayList<Recipe> {
-        val gson = Gson()
-        val file = File(context.filesDir, "recipes.json")
-        if (file.exists()) {
-            FileReader(file).use { reader ->
-                val recipesArray = gson.fromJson(reader, Array<Recipe>::class.java)
-                return ArrayList(recipesArray?.toList() ?: emptyList())
-            }
-        } else {
-            return ArrayList() // Si no existe, devolvemos una lista vacía
-        }
-    }
 }
