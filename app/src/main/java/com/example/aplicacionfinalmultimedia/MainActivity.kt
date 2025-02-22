@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -84,6 +83,7 @@ class MainActivity : AppCompatActivity() {
     // Método para actualizar la lista de recetas
     fun updateRecipeList() {
         adapter.updateRecipes(recipeList) // Actualiza el adapter con la lista completa
+        saveRecipesToFile(this, recipeList)
     }
 
     // Método para filtrar recetas por nombre
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             recipeList // Mostrar todas las recetas si no hay búsqueda
         } else {
             recipeList.filter { it.title.lowercase().contains(query.lowercase()) }
-        }
+        } as ArrayList
         adapter.updateRecipes(filteredList) // Actualizar el adapter con la lista filtrada
     }
 
