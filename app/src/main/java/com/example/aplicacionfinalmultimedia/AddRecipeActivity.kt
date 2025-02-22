@@ -6,12 +6,19 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.example.aplicacionfinalmultimedia.MainActivity.Companion.recipeList
 import com.example.aplicacionfinalmultimedia.Model.Recipe
@@ -19,6 +26,11 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class AddRecipeActivity : AppCompatActivity() {
 
@@ -26,9 +38,13 @@ class AddRecipeActivity : AppCompatActivity() {
     private lateinit var addPhotoButton: Button
     private lateinit var addAudioButton: Button
     private lateinit var saveButton: Button
+    private lateinit var imageView: ImageView
 
     private var photoPath: String? = null
     private var audioPath: String? = null
+
+    private var imageCapture: ImageCapture? = null
+    private lateinit var cameraExecutor: ExecutorService
 
     private lateinit var activityAudioLauncher:
             ActivityResultLauncher<Intent>
@@ -44,6 +60,18 @@ class AddRecipeActivity : AppCompatActivity() {
         addPhotoButton = findViewById(R.id.addPhotoButton)
         addAudioButton = findViewById(R.id.addAudioButton)
         saveButton = findViewById(R.id.saveButton)
+        imageView = findViewById(R.id.imageView)
+
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        startCamera()
+
+        // Pedir permisos antes de iniciar la cámara
+//        if (checkPermission(Manifest.permission.CAMERA)) {
+//            startCamera()
+//        } else {
+//            requestPermissions.launch(arrayOf(Manifest.permission.CAMERA))
+//        }
 
         //Inicializar audiolauncher
         activityAudioLauncher =
@@ -71,10 +99,15 @@ class AddRecipeActivity : AppCompatActivity() {
                 }
             }
 
-        // Añadir foto
+//        // Añadir foto
+//        addPhotoButton.setOnClickListener {
+//            if(checkPermission(android.Manifest.permission.CAMERA)) openCamera()
+//        }
+
         addPhotoButton.setOnClickListener {
-            if(checkPermission(android.Manifest.permission.CAMERA)) openCamera()
+            capturePhoto()
         }
+
 
         // Añadir audio
         addAudioButton.setOnClickListener {
@@ -96,6 +129,65 @@ class AddRecipeActivity : AppCompatActivity() {
         }
     }
 
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener({
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            val preview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(findViewById<androidx.camera.view.PreviewView>(R.id.viewFinder).surfaceProvider)
+                }
+
+            imageCapture = ImageCapture.Builder().build()
+
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
+            } catch (exc: Exception) {
+                Log.e("CameraX", "Error al iniciar la cámara: ${exc.message}", exc)
+                Toast.makeText(this, "No se pudo iniciar la cámara: ${exc.message}", Toast.LENGTH_SHORT).show()
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun capturePhoto() {
+        val imageCapture = imageCapture ?: return
+
+        val photoFile = File(
+            filesDir,
+            "recipe_image_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    photoPath = photoFile.absolutePath
+                    runOnUiThread {
+                        imageView.setImageURI(Uri.fromFile(photoFile)) // Mostrar la foto tomada
+                        Toast.makeText(applicationContext, "Imagen guardada", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e("CameraX", "Error al tomar la foto: ${exception.message}", exception)
+                }
+            }
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+
     private fun checkPermission(permission: String) :Boolean {
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             return false
@@ -104,10 +196,10 @@ class AddRecipeActivity : AppCompatActivity() {
         }
     }
 
-    private fun openCamera() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        activityCameraLauncher.launch(intent)
-    }
+//    private fun openCamera() {
+//        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//        activityCameraLauncher.launch(intent)
+//    }
 
     private fun recordAudio() {
         val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION)
