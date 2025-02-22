@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         // Lista de recetas almacenadas
         lateinit var recipeList: ArrayList<Recipe>
+        // identificador para la solicitud de permisos en tiempo de ejecución
         val PERMISSION_CODE = 100
     }
 
@@ -122,4 +123,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
